@@ -1,0 +1,76 @@
+# -------------------------
+# Python cache & temp files
+# -------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -------------------------
+# Virtual environments
+# -------------------------
+venv/
+.env/
+.venv/
+
+# -------------------------
+# Environment variables / secrets
+# -------------------------
+.env
+*.env
+
+# -------------------------
+# Databases / temp storage
+# -------------------------
+*.db
+*.sqlite3
+
+# -------------------------
+# Data files
+# -------------------------
+data/
+*.csv
+*.json
+*.tsv
+*.txt
+
+# -------------------------
+# Model / embedding files
+# -------------------------
+models/
+*.bin
+*.ckpt
+*.pt
+*.pth
+*.h5
+*.onnx
+
+# -------------------------
+# Logs / output files
+# -------------------------
+logs/
+*.log
+
+# -------------------------
+# Jupyter notebook checkpoints
+# -------------------------
+.ipynb_checkpoints/
+
+# -------------------------
+# System files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# Vector stores (FAISS, Chroma, Pinecone)
+# -------------------------
+*.faiss
+chroma/
+pinecone/
+
+# -------------------------
+# Uploaded or processed documents
+# -------------------------
+uploads/
+docs/
