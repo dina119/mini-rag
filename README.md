@@ -42,3 +42,7 @@ After setting up the environment variables, you can start the application by run
 ```bash
 python app.py
 ```
+###Run FastAPI server
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 5000
+```
