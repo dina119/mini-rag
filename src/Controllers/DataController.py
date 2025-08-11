@@ -16,21 +16,21 @@ class DataController(BaseController):
             return False , Response_Signal.FILE_MAX_SIZE_EXCEEDED.value
         return True , Response_Signal.FILE_VALIDATE_SUCCESS.value
     
-    def generate_filename(self,original_filename:str,project_id:str):
-        random_filename=self.generate_random_string()
+    def generate_unique_filepath(self,original_filename:str,project_id:str):
+        random_key=self.generate_random_string()
         file_path=ProjectController().get_project_path(project_id=project_id)
         cleaned_filename=self.get_cleaned_filename(original_filename=original_filename)
         new_filePath=os.path.join(
             file_path,
-            random_filename+"_"+cleaned_filename
+            random_key+"_"+cleaned_filename
         )
         while os.path.exists(new_filePath):
-            random_filename=self.generate_random_string()
+            random_key=self.generate_random_string()
             new_filePath=os.path.join(
             file_path,
-            random_filename+"_"+cleaned_filename
+            random_key+"_"+cleaned_filename
         )
-        return new_filePath
+        return new_filePath,random_key+"_"+cleaned_filename
             
     
     def get_cleaned_filename(self,original_filename:str):

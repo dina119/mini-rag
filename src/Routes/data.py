@@ -25,7 +25,7 @@ async def uploaFile(project_id:str,file:UploadFile,AppSetting=Depends(getSetting
              }
          )
     project_dir_path=ProjectController().get_project_path(project_id=project_id)
-    file_Path=DataController().generate_filename(original_filename=file.filename,project_id=project_id)
+    file_Path,file_id=DataController().generate_unique_filepath(original_filename=file.filename,project_id=project_id)
        
     try:
             async with aiofiles.open(file_Path,"+wb")as f:
@@ -44,7 +44,8 @@ async def uploaFile(project_id:str,file:UploadFile,AppSetting=Depends(getSetting
     return JSONResponse(
              
              content={
-                 "Signal":Response_Signal.FILE_UPLOAD_SUCCESS.value
+                 "Signal":Response_Signal.FILE_UPLOAD_SUCCESS.value,
+                 "file_id":file_id
              }
          )
         
