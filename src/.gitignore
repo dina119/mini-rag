@@ -38,13 +38,7 @@ data/
 # -------------------------
 # Model / embedding files
 # -------------------------
-models/
-*.bin
-*.ckpt
-*.pt
-*.pth
-*.h5
-*.onnx
+
 
 # -------------------------
 # Logs / output files
