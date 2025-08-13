@@ -1,4 +1,4 @@
-from Heplers import getSettings, settings
+from Helpers import getSettings, settings
 
 class BaseDataModel:
     def __init__(self,db_client:object):
