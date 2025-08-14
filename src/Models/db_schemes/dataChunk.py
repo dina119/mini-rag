@@ -1,5 +1,5 @@
 from pydantic import BaseModel,Field,validator
-from typign import Optional
+from typing import Optional
 from bson.objectid import ObjectId
 
 class DataChunk(BaseModel):
@@ -9,6 +9,6 @@ class DataChunk(BaseModel):
      chunk_order:int=Field(...,gt=0)
      chunk_project_id:ObjectId
      
-     class config:
-        arbitary_types_allowed=true
+     class Config:
+        arbitrary_types_allowed=True
         

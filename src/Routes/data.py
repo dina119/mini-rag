@@ -7,7 +7,8 @@ import aiofiles
 from Models import Response_Signal
 import logging
 from .Schemes.data import Process_Request
-from Models import ProjectModel
+from Models import ProjectModel,ChunkModel
+from Models.db_schemes.dataChunk import DataChunk
 
 logger=logging.getLogger('uvicorn.error')
 
@@ -57,10 +58,16 @@ async def uploaFile(request:Request,project_id:str,file:UploadFile,AppSetting=De
          )
     
 @data_Router.post("/process/{project_id}")
-async def Process_Endpoint(project_id:str,Process_Request:Process_Request):
+async def Process_Endpoint(request:Request,project_id:str,Process_Request:Process_Request):
     file_id=Process_Request.file_id
     chunk_size=Process_Request.chunk_size
     overlap_size=Process_Request.overlap_size
+    Do_Reset=Process_Request.Do_Reset
+    
+    
+    Project_Model=ProjectModel(db_client=request.app.db_client)
+    project=await Project_Model.get_project_or_create_one(project_id=project_id)
+    
     Process_Controller=ProcessController(project_id=project_id)   
     file_content=Process_Controller.get_file_content(file_id=file_id)   
     file_chunks=Process_Controller.process_file_content(
@@ -76,8 +83,30 @@ async def Process_Endpoint(project_id:str,Process_Request:Process_Request):
                  "Signal":Response_Signal.PROCESSING_FAILED
              }
          )
-    return file_chunks
+    file_chunks_record=[
         
+        DataChunk(
+            chunk_text=chunk.page_content,
+            chunk_metadata=chunk.metadata,
+            chunk_order=i+1,
+            chunk_project_id=project._id,
+        )
+        for i, chunk in enumerate(file_chunks)
+    ]
+    chunk_Model=ChunkModel(db_client=request.app.db_client)
+    if Do_Reset==1:
+        
+        _=await chunk_Model.delete_chunks_by_projectId(project_id=project._id)
+        
+    
+    no_records=await chunk_Model.insert_many_chunks(file_chunks_record)
+    return JSONResponse(
+            
+             content={
+                 "Signal":Response_Signal.PROCESSING_SUCCESS.value,
+                 "Inserted_chunks":no_records,
+             }
+         )
     
         
     
