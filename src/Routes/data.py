@@ -9,7 +9,16 @@ import logging
 from .Schemes.data import Process_Request
 from Models import ProjectModel,ChunkModel
 from Models.db_schemes.dataChunk import DataChunk
+from qdrant_client.http.models import PointStruct
+from Services.embeddings import get_embedding_model,get_embedding,embedding_dim
+from Services.vector_store import ensure_collection, upsert_points
+from pydantic import BaseModel
+from typing import Optional
 
+class SearchRequest(BaseModel):
+    query: str
+    top_k: Optional[int] = 5
+    
 logger=logging.getLogger('uvicorn.error')
 
 data_Router=APIRouter(
@@ -99,14 +108,53 @@ async def Process_Endpoint(request:Request,project_id:str,Process_Request:Proces
         _=await chunk_Model.delete_chunks_by_projectId(project_id=project._id)
         
     
-    no_records=await chunk_Model.insert_many_chunks(file_chunks_record)
+    inserted_ids = await chunk_Model.insert_chunks_in_batches(file_chunks_record)
+    embeddings_points = []
+    for chunk in file_chunks_record:
+        
+        vector = get_embedding(chunk.chunk_text)
+        embeddings_points.append(
+            
+            PointStruct(
+                
+                id=chunk.chunk_order,
+                vector=vector,
+                payload={
+                    
+                    "text": chunk.chunk_text,
+                    "metadata": chunk.chunk_metadata
+                }
+            )
+        )
+    ensure_collection()
+    upsert_points(embeddings_points)
+    inserted_ids_str = [str(_id) for _id in inserted_ids]
     return JSONResponse(
             
              content={
                  "Signal":Response_Signal.PROCESSING_SUCCESS.value,
-                 "Inserted_chunks":no_records,
+                 "Inserted_ids_str":inserted_ids_str,
              }
          )
+    
+@data_Router.post("/search/{project_id}")
+async def search_chunks(project_id: str, search_request: SearchRequest):
+    query_vector = get_embedding(search_request.query)
+    results = search(
+        collection_name=COLLECTION_NAME,
+        query_vector=query_vector,
+        top_k=search_request.top_k,
+        filter={"must": [{"key": "chunk_project_id", "match": {"value": project_id}}]}  
+    )
+    response = []
+    for r in results:
+        response.append({
+            "text": r.payload.get("text"),
+            "metadata": r.payload.get("metadata"),
+            "score": r.score
+        })
+    
+    return response
     
         
     

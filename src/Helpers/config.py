@@ -8,6 +8,10 @@ class settings(BaseSettings):
     FILE_DEFAULT_CHUNKSIZE:int
     MONGODB_URL:str
     MONGODB_DATABASE:str
+    qdrant_host: str
+    qdrant_port: int
+    qdrant_collection: str
+    embedding_model: str
     
     class Config:
         env_file= ".env"
