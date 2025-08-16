@@ -42,7 +42,20 @@ After setting up the environment variables, you can start the application by run
 ```bash
 python app.py
 ```
-### 5.Run FastAPI server
+### 6. Run Services (MongoDB)
+The `docker-compose.yml` file is already provided in the project.  
+To run both **MongoDB** , simply execute:
+
+```bash
+docker compose up -d
+```
+### 7. Run Services (qdrant)
+
+```bash
+docker run -p 6333:6333 qdrant/qdrant
+
+```
+### 8.Run FastAPI server
 ```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 5000
 ```
