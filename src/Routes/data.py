@@ -29,7 +29,7 @@ data_Router=APIRouter(
 @data_Router.post("/upload/{project_id}")
 async def uploaFile(request:Request,project_id:str,file:UploadFile,AppSetting=Depends(getSettings)):
     
-    Project_Model=ProjectModel(db_client=request.app.db_client)
+    Project_Model=await ProjectModel.create_instance(db_client=request.app.db_client)
     project=await Project_Model.get_project_or_create_one(project_id=project_id)
     
     IsValid,resultSignal=DataController().Validate_Uploaded_File(file=file)
@@ -74,7 +74,7 @@ async def Process_Endpoint(request:Request,project_id:str,Process_Request:Proces
     Do_Reset=Process_Request.Do_Reset
     
     
-    Project_Model=ProjectModel(db_client=request.app.db_client)
+    Project_Model=await ProjectModel.create_instance(db_client=request.app.db_client)
     project=await Project_Model.get_project_or_create_one(project_id=project_id)
     
     Process_Controller=ProcessController(project_id=project_id)   
@@ -102,7 +102,7 @@ async def Process_Endpoint(request:Request,project_id:str,Process_Request:Proces
         )
         for i, chunk in enumerate(file_chunks)
     ]
-    chunk_Model=ChunkModel(db_client=request.app.db_client)
+    chunk_Model=await ChunkModel.create_instance(db_client=request.app.db_client)
     if Do_Reset==1:
         
         _=await chunk_Model.delete_chunks_by_projectId(project_id=project._id)
