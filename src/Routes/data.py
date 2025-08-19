@@ -78,6 +78,7 @@ async def uploaFile(request:Request,project_id:str,file:UploadFile,AppSetting=De
     
 @data_Router.post("/process/{project_id}")
 async def Process_Endpoint(request:Request,project_id:str,Process_Request:Process_Request):
+    
     file_id=Process_Request.file_id
     chunk_size=Process_Request.chunk_size
     overlap_size=Process_Request.overlap_size
@@ -119,6 +120,7 @@ async def Process_Endpoint(request:Request,project_id:str,Process_Request:Proces
         
     
     inserted_ids = await chunk_Model.insert_chunks_in_batches(file_chunks_record)
+    
     embeddings_points = []
     for chunk in file_chunks_record:
         
