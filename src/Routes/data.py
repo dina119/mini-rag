@@ -7,8 +7,9 @@ import aiofiles
 from Models import Response_Signal
 import logging
 from .Schemes.data import Process_Request
-from Models import ProjectModel,ChunkModel
+from Models import ProjectModel,ChunkModel,AssetModel
 from Models.db_schemes.dataChunk import DataChunk
+from Models.db_schemes.asset import Asset
 from qdrant_client.http.models import PointStruct
 from Services.embeddings import get_embedding_model,get_embedding,embedding_dim
 from Services.vector_store import ensure_collection, upsert_points, search
@@ -56,12 +57,21 @@ async def uploaFile(request:Request,project_id:str,file:UploadFile,AppSetting=De
              }
          )
         
+    asset_model=await AssetModel.create_instance(db_client=request.app.db_client)
+    asset_resourse=Asset(
+        asset_project_id=project._id,
+        asset_type="file",
+        asset_name=file_id,
+        asset_size=os.path.getsize(file_Path)
+        )
+        
+    asset_record=await asset_model.create_asset(asset=asset_resourse)
     
     return JSONResponse(
              
              content={
                  "Signal":Response_Signal.FILE_UPLOAD_SUCCESS.value,
-                 "file_id":file_id,
+                 "file_id":str(asset_record._id),
                  "project_id":str(project._id)
              }
          )
