@@ -33,7 +33,7 @@ data/
 *.csv
 *.json
 *.tsv
-*.txt
+
 
 # -------------------------
 # Model / embedding files
