@@ -15,7 +15,7 @@ from Services.embeddings import get_embedding_model,get_embedding,embedding_dim
 from Services.vector_store import ensure_collection, upsert_points, search
 from pydantic import BaseModel
 from typing import Optional
-
+import google.generativeai as genai
 class SearchRequest(BaseModel):
     query: str
     top_k: Optional[int] = 5
@@ -169,6 +169,52 @@ async def search_chunks(project_id: str, search_request: SearchRequest):
         })
     
     return response
+
+class GenerationRequest(BaseModel):
+    question: str
+    top_k: Optional[int] = 5
+    
+@data_Router.post("/generate_Answer/{project_id}")
+async def generate_answer(project_id: str, gen_request: GenerationRequest,AppSetting=Depends(getSettings)):
+    try:
+        query_vector = get_embedding(gen_request.question)
+
+        COLLECTION_NAME = ensure_collection()
+        results = search(
+            collection_name=COLLECTION_NAME,
+            query_vector=query_vector,
+            top_k=gen_request.top_k,
+            filter={"must": [{"key": "project_id", "match": {"value": project_id}}]}
+        )
+        context = "\n".join([r.payload.get("text", "") for r in results])
+        genai.configure(api_key=AppSetting.GEMINI_API_KEY)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        prompt = f"""
+        You are a smart assistant. You have information from project {project_id}.
+        Question: {gen_request.question}
+
+        Context (from database):
+        {context}
+
+        Please answer using the information above. 
+        If the answer is not in the context, just say the information is not available.
+        """
+        response = model.generate_content(prompt)
+        return JSONResponse(
+            content={
+                "query": gen_request.question,
+                "answer": response.text,
+                "sources": [r.payload.get("metadata") for r in results]
+            },
+            status_code=status.HTTP_200_OK
+        )
+    
+    except Exception as e:
+        logger.error(f"Error in generation endpoint: {str(e)}")
+        return JSONResponse(
+            content={"error": "Failed to generate response", "details": str(e)},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     
         
     

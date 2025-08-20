@@ -12,6 +12,7 @@ class settings(BaseSettings):
     qdrant_port: int
     qdrant_collection: str
     embedding_model: str
+    GEMINI_API_KEY:str
     
     class Config:
         env_file= ".env"
